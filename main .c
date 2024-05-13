@@ -1,101 +1,104 @@
 #include <stdio.h>
 
 struct JogoInfo {
-    int pontuacao;
-    int max_peca;
-    int max_retirar;
+  int pontuacao;
+  int max_peca;
+  int max_retirar;
 };
 
-struct JogoInfo inicializarJogo() {
-    struct JogoInfo info;
-    info.pontuacao = 0;
-    info.max_peca = 0;
-    info.max_retirar = 0;
-    return info;
+void inicializarPeca(struct JogoInfo *info) {
+  info->pontuacao = 0;
+  info->max_peca = 0;
+  info->max_retirar = 0;
 }
 
-void exibirJogoInfo(struct JogoInfo info) {
-    printf("Pontuação: %d\n", info.pontuacao);
-    printf("Máximo de peças no tabuleiro: %d\n", info.max_peca);
-    printf("Máximo de peças a serem retiradas por jogada: %d\n", info.max_retirar);
+void exibirJogoInfo(const struct JogoInfo *info) {
+  printf("Pontuação: %d\n", info->pontuacao);
+  printf("Máximo de peças no tabuleiro: %d\n", info->max_peca);
+  printf("Máximo de peças a serem retiradas por jogada: %d\n",
+         info->max_retirar);
 }
 
-int computadorEscolheJogada(struct JogoInfo info, int n) {
-    int remove_computador = 1;
+int retirarPeca(struct JogoInfo *info, int pecaTirada) {
+  if (pecaTirada > info->max_peca) {
+    printf("Você está tentando retirar mais peças do que o número máximo "
+           "permitido!\n");
+    return 0;
+  }
 
-    while (remove_computador != info.max_retirar) {
-        if ((n - remove_computador) % (info.max_retirar + 1) == 0) {
-            return remove_computador;
-        } else {
-            remove_computador++;
-        }
+  if (pecaTirada > info->max_retirar) {
+    printf("Você está tentando retirar mais peças do que o máximo permitido "
+           "por jogada!\n");
+    return 0;
+  }
+
+  if (info->pontuacao + pecaTirada >= info->max_peca) {
+    printf("Parabéns, você ganhou o jogo!\n");
+    return 1;
+  }
+
+  info->pontuacao += pecaTirada;
+  return -1;
+}
+
+void partida(struct JogoInfo *info) {
+  int n = info->max_peca;
+  int vez_do_pc = 0;
+
+  printf("\nComeçando uma nova partida...\n");
+  printf("Número inicial de peças no tabuleiro: %d\n", n);
+
+  while (n > 0) {
+    if (vez_do_pc) {
+      printf("Turno do computador...\n");
+      int remove_computador = 1;
+      printf("O computador removeu %d peça(s).\n", remove_computador);
+      n -= remove_computador;
+      vez_do_pc = 0;
+    } else {
+      printf("Seu turno...\n");
+      int remove_jogador;
+      printf("Digite quantas peças você quer remover (1 a %d): ",
+             info->max_retirar);
+      scanf("%d", &remove_jogador);
+      int resultado = retirarPeca(info, remove_jogador);
+      if (resultado == 1) {
+        printf("Fim do jogo! Você ganhou!\n");
+        return;
+      } else if (resultado == 0) {
+        printf("Jogada inválida! Tente novamente.\n");
+        continue;
+      }
+      printf("Você removeu %d peça(s).\n", remove_jogador);
+      n -= remove_jogador;
+      vez_do_pc = 1;
     }
 
-    return remove_computador;
-}
-
-int usuarioEscolheJogada(struct JogoInfo info, int n) {
-    int remove_jogador;
-    int jogada_valida = 0;
-
-    while (!jogada_valida) {
-        printf("Quantas peças você vai tirar (1 a %d)? ", info.max_retirar);
-        scanf("%d", &remove_jogador);
-        if (remove_jogador < 1 || remove_jogador > info.max_retirar || remove_jogador > n) {
-            printf("Jogada inválida! Tente novamente.\n");
-        } else {
-            jogada_valida = 1;
-        }
+    if (n > 0) {
+      printf("Agora restam %d peças no tabuleiro.\n", n);
     }
+  }
 
-    return remove_jogador;
-}
-
-void partida(struct JogoInfo info) {
-    int n = info.max_peca;
-    int vez_do_pc = 0;
-
-    printf("\nComeçando uma nova partida...\n");
-    printf("Número inicial de peças no tabuleiro: %d\n", n);
-
-    while (n > 0) {
-        if (vez_do_pc) {
-            int remove_computador = computadorEscolheJogada(info, n);
-            printf("O computador removeu %d peça(s).\n", remove_computador);
-            n -= remove_computador;
-            vez_do_pc = 0;
-        } else {
-            int remove_jogador = usuarioEscolheJogada(info, n);
-            printf("Você removeu %d peça(s).\n", remove_jogador);
-            n -= remove_jogador;
-            vez_do_pc = 1;
-        }
-
-        if (n > 0) {
-            printf("Agora restam %d peças no tabuleiro.\n", n);
-        }
-    }
-
-    printf("\nFim do jogo! %s ganhou!\n", vez_do_pc ? "Você" : "O computador");
+  printf("Fim do jogo! O computador ganhou!\n");
 }
 
 int main() {
-    struct JogoInfo info;
+  struct JogoInfo info;
+  inicializarPeca(&info);
+  printf("Bem-vindo ao jogo do NIM!\n");
 
-    printf("Bem-vindo ao jogo do NIM!\n");
+  printf("Digite o número máximo de peças no tabuleiro: ");
+  scanf("%d", &info.max_peca);
 
-    printf("Digite o número máximo de peças no tabuleiro: ");
-    scanf("%d", &info.max_peca);
+  printf("Digite o número máximo de peças a serem retiradas por jogada: ");
+  scanf("%d", &info.max_retirar);
 
-    printf("Digite o número máximo de peças a serem retiradas por jogada: ");
-    scanf("%d", &info.max_retirar);
+  info.pontuacao = 0;
 
-    info.pontuacao = 0;
+  printf("\nConfigurações do jogo:\n");
+  exibirJogoInfo(&info);
 
-    printf("\nConfigurações do jogo:\n");
-    exibirJogoInfo(info);
+  partida(&info);
 
-    partida(info);
-
-    return 0;
+  return 0;
 }
