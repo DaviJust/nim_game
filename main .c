@@ -52,7 +52,7 @@ int retirarPeca(struct JogoInfo *info, int pecaTirada) {
   return -1;
 }
 
-void partida() {
+int partida() {
   struct JogoInfo info;
   inicializarPeca(&info);
 
@@ -78,76 +78,85 @@ void partida() {
   printf("Número inicial de peças no tabuleiro: %d\n", n);
 
   while (n > 0) {
-    if (vez_do_pc) {
-      printf("Turno do computador...\n");
-      int remove_computador = 1;
-      printf("O computador removeu %d peça(s).\n", remove_computador);
-      n -= remove_computador;
-      vez_do_pc = 0;
-    } else {
-      printf("Seu turno...\n");
-      int remove_jogador;
-      printf("Digite quantas peças você quer remover (1 a %d): ",
-             *(info.max_retirar));
-      scanf("%d", &remove_jogador);
-      int resultado = retirarPeca(&info, remove_jogador);
-      if (resultado == 1) {
-        printf("Fim do jogo! Você ganhou!\n");
-        free(info.max_peca);
-        free(info.max_retirar);
-        return;
-      } else if (resultado == 0) {
-        printf("Jogada inválida! Tente novamente.\n");
-        continue;
+      if (vez_do_pc) {
+          printf("Turno do computador...\n");
+          int remove_computador = 1;
+          printf("O computador removeu %d peça(s).\n", remove_computador);
+          n -= remove_computador;
+          vez_do_pc = 0;
+      } else {
+          printf("Seu turno...\n");
+          int remove_jogador;
+          printf("Digite quantas peças você quer remover (1 a %d): ",
+                 *(info.max_retirar));
+          scanf("%d", &remove_jogador);
+          int resultado = retirarPeca(&info, remove_jogador);
+          if (resultado == 1) {
+              printf("Fim do jogo! Você ganhou!\n");
+              free(info.max_peca);
+              free(info.max_retirar);
+              return 1; // Jogador ganhou
+          } else if (resultado == 0) {
+              printf("Jogada inválida! Tente novamente.\n");
+              continue;
+          }
+          printf("Você removeu %d peça(s).\n", remove_jogador);
+          n -= remove_jogador;
+          vez_do_pc = 1;
       }
-      printf("Você removeu %d peça(s).\n", remove_jogador);
-      n -= remove_jogador;
-      vez_do_pc = 1;
-    }
 
-    if (n > 0) {
-      printf("Agora restam %d peças no tabuleiro.\n", n);
-    }
+      if (n > 0) {
+          printf("Agora restam %d peças no tabuleiro.\n", n);
+      }
   }
 
   printf("Fim do jogo! O computador ganhou!\n");
   free(info.max_peca);
   free(info.max_retirar);
+  return 0; // Computador ganhou
+}
+
+
+
+void contar(struct Campeonato *pontos_jogador, int partidas) {
+  int ganhou_humano = 0;
+  int ganhou_computador = 0;
+
+  for (int i = 0; i < partidas; i++) {
+    if (pontos_jogador[i].pontuacao_humano == 1) {
+      ganhou_humano++;
+    }
+    if (pontos_jogador[i].pontuacao_computador == 1) {
+      ganhou_computador++;
+    }
+  }
+
+  if (ganhou_humano > ganhou_computador) {
+    printf("Parabéns! Você ganhou o campeonato!\n");
+  } else if (ganhou_humano < ganhou_computador) {
+    printf("O computador ganhou o campeonato!\n");
+  } else {
+    printf("O campeonato terminou em empate!\n");
+  }
 }
 
 void campeonato(int partidas) {
-  struct Campeonato *pontos_jogador =
-      (struct Campeonato *)malloc(partidas * sizeof(struct Campeonato));
-  struct Campeonato *pontos_computador =
-      (struct Campeonato *)malloc(partidas * sizeof(struct Campeonato));
+  struct Campeonato *campeonato = malloc(partidas * sizeof(struct Campeonato));
 
   for (int i = 0; i < partidas; i++) {
-    printf("\nPartida %d:\n", i + 1);
-    partida();
-    // Aqui você pode atualizar os pontos do jogador e do computador conforme
-    // necessário
+      printf("\nPartida %d:\n", i + 1);
+      if (partida()) {
+          campeonato[i].pontuacao_humano += 1;
+      } else {
+          campeonato[i].pontuacao_computador += 1;
+      }
   }
 
-  // Verificar quem ganhou o campeonato
-  int pontos_total_jogador = 0;
-  int pontos_total_computador = 0;
-  for (int i = 0; i < partidas; i++) {
-    pontos_total_jogador += pontos_jogador[i].pontuacao_humano;
-    pontos_total_computador += pontos_computador[i].pontuacao_computador;
-  }
+  // Chamando a função contar para determinar o vencedor do campeonato
+  contar(campeonato, partidas);
 
-  if (pontos_total_jogador > pontos_total_computador) {
-    printf("\nParabéns! Você ganhou o campeonato!\n");
-  } else if (pontos_total_jogador < pontos_total_computador) {
-    printf("\nO computador ganhou o campeonato!\n");
-  } else {
-    printf("\nO campeonato terminou em empate!\n");
-  }
-
-  free(pontos_jogador);
-  free(pontos_computador);
+  free(campeonato);
 }
-
 int main() {
   int escolha;
   int partidas;
