@@ -7,65 +7,16 @@ struct JogoInfo {
   int *max_retirar;
 };
 
-// Definição da estrutura para pontuações do campeonato
 struct Campeonato {
-    int pontuacao_humano;
-    int pontuacao_computador;
-    struct Campeonato *prox_pontuacao; // Próxima pontuação na lista
+  int pontuacao_humano;
+  int pontuacao_computador;
 };
-
-// Variável global para o início da lista
-struct Campeonato *inicioL = NULL;
-
-
-
-// Função para adicionar uma pontuação à lista
-void adicionarPontuacao(int ponto_computador, int ponto_humano) {
-    // Aloca memória para o novo elemento
-    struct Campeonato *novoElemento = (struct Campeonato *)malloc(sizeof(struct Campeonato));
-    if (novoElemento == NULL) {
-        printf("Erro ao alocar memória para novo elemento.\n");
-        return; // Retorna se não foi possível alocar memória
-    }
-
-    // Define a pontuação do novo elemento
-    novoElemento->pontuacao_humano = ponto_computador;
-    novoElemento->pontuacao_humano = ponto_humano;
-    // Define o próximo como NULL, pois é o último elemento
-    novoElemento->prox_pontuacao = NULL;
-
-    // Se a lista estiver vazia, o novo elemento será o primeiro
-    if (inicioL == NULL) {
-        inicioL = novoElemento;
-    } else {
-        // Se não estiver vazia, percorre até o último elemento e adiciona o novo no final
-        struct Campeonato *temp = inicioL;
-        while (temp->prox_pontuacao != NULL) {
-            temp = temp->prox_pontuacao;
-        }
-        temp->prox_pontuacao = novoElemento; // Adiciona o novo elemento ao final
-    }
-}
-
-// Função para liberar a memória alocada para a lista
-void liberarLista() {
-    struct Campeonato *atual = inicioL;
-    while (atual != NULL) {
-        struct Campeonato *proximo = atual->prox_pontuacao; // Salva o próximo elemento
-        free(atual); // Libera a memória do elemento atual
-        atual = proximo; // Move para o próximo elemento
-    }
-    inicioL = NULL; // Define o início da lista como NULL, indicando que a lista está vazia
-}
 
 void inicializarPeca(struct JogoInfo *info) {
   info->pontuacao = 0;
   info->max_peca = NULL;
   info->max_retirar = NULL;
 }
-
-
-struct Campeonato *inicioL = NULL;
 
 void exibirJogoInfo(const struct JogoInfo *info) {
   printf("Pontuação: %d\n", info->pontuacao);
@@ -102,8 +53,6 @@ int retirarPeca(struct JogoInfo *info, int pecaTirada) {
 }
 
 void partida() {
-  char ganhou = "Fim do jogo! Você ganhou!";
-  char perdeu = "Fim do jogo! Você ganhou!";
   struct JogoInfo info;
   inicializarPeca(&info);
 
@@ -121,7 +70,9 @@ void partida() {
   exibirJogoInfo(&info);
 
   int n = *(info.max_peca);
-  int vez_do_pc = 0;
+  printf("Deseja começar o jogo? (0 para sim, 1 para não): ");
+  int vez_do_pc;
+  scanf("%d", &vez_do_pc);
 
   printf("\nComeçando uma nova partida...\n");
   printf("Número inicial de peças no tabuleiro: %d\n", n);
@@ -141,7 +92,7 @@ void partida() {
       scanf("%d", &remove_jogador);
       int resultado = retirarPeca(&info, remove_jogador);
       if (resultado == 1) {
-        printf("%s",ganhou);
+        printf("Fim do jogo! Você ganhou!\n");
         free(info.max_peca);
         free(info.max_retirar);
         return;
@@ -159,14 +110,65 @@ void partida() {
     }
   }
 
-  printf("%s",perdeu);
-  adicionarPontuacao(0,1);
+  printf("Fim do jogo! O computador ganhou!\n");
   free(info.max_peca);
   free(info.max_retirar);
 }
 
+void campeonato(int partidas) {
+  struct Campeonato *pontos_jogador =
+      (struct Campeonato *)malloc(partidas * sizeof(struct Campeonato));
+  struct Campeonato *pontos_computador =
+      (struct Campeonato *)malloc(partidas * sizeof(struct Campeonato));
+
+  for (int i = 0; i < partidas; i++) {
+    printf("\nPartida %d:\n", i + 1);
+    partida();
+    // Aqui você pode atualizar os pontos do jogador e do computador conforme
+    // necessário
+  }
+
+  // Verificar quem ganhou o campeonato
+  int pontos_total_jogador = 0;
+  int pontos_total_computador = 0;
+  for (int i = 0; i < partidas; i++) {
+    pontos_total_jogador += pontos_jogador[i].pontuacao_humano;
+    pontos_total_computador += pontos_computador[i].pontuacao_computador;
+  }
+
+  if (pontos_total_jogador > pontos_total_computador) {
+    printf("\nParabéns! Você ganhou o campeonato!\n");
+  } else if (pontos_total_jogador < pontos_total_computador) {
+    printf("\nO computador ganhou o campeonato!\n");
+  } else {
+    printf("\nO campeonato terminou em empate!\n");
+  }
+
+  free(pontos_jogador);
+  free(pontos_computador);
+}
+
 int main() {
+  int escolha;
+  int partidas;
   printf("Bem-vindo ao jogo do NIM!\n");
-  partida();
+  printf("Escolha uma opção:\n");
+  printf("1. Jogar partida normal\n");
+  printf("2. Jogar campeonato\n");
+  scanf("%d", &escolha);
+
+  switch (escolha) {
+  case 1:
+    partida();
+    break;
+  case 2:
+    printf("Digite o número de partidas do campeonato: ");
+    scanf("%d", &partidas);
+    campeonato(partidas);
+    break;
+  default:
+    printf("Opção inválida.\n");
+  }
+
   return 0;
 }
