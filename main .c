@@ -1,75 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-struct JogoInfo {
+// Estruturas
+struct jogo_informacao {
   int pontuacao;
   int *max_peca;
   int *max_retirar;
 };
 
-struct Campeonato {
+struct campeonato {
   int pontuacao_humano;
   int pontuacao_computador;
 };
 
-void inicializarPeca(struct JogoInfo *info) {
-  info->pontuacao = 0;
-  info->max_peca = NULL;
-  info->max_retirar = NULL;
+void inicializarPeca(struct jogo_informacao * jogo_informacao) {
+  jogo_informacao->pontuacao = 0;
+  jogo_informacao->max_peca = (int *)malloc(sizeof(int));
+  jogo_informacao->max_retirar = (int *)malloc(sizeof(int));
 }
 
-void exibirJogoInfo(const struct JogoInfo *info) {
-  printf("Pontuação: %d\n", info->pontuacao);
-  printf("Máximo de peças no tabuleiro: %d\n", *(info->max_peca));
-  printf("Máximo de peças a serem retiradas por jogada: %d\n",
-         *(info->max_retirar));
+void exibirjogo_informacao(const struct jogo_informacao *_informacao) {
+  printf("Pontuação: %d\n", _informacao->pontuacao);
+  if (_informacao->max_peca != NULL) {
+    printf("Máximo de peças no tabuleiro: %d\n", *(_informacao->max_peca));
+  }
+  if (_informacao->max_retirar != NULL) {
+    printf("Máximo de peças a serem retiradas por jogada: %d\n",
+           *(_informacao->max_retirar));
+  }
 }
 
-int retirarPeca(struct JogoInfo *info, int pecaTirada) {
-  if (pecaTirada > *(info->max_peca)) {
-    printf("Você está tentando retirar mais peças do que o número máximo "
-           "permitido!\n");
+int retirarPeca(struct jogo_informacao *_informacao, int pecaTirada) {
+  if (pecaTirada > *(_informacao->max_peca)) {
+    printf("Você está tentando retirar mais peças do que o número máximo permitido!\n");
     return 0;
   }
 
-  if (pecaTirada > *(info->max_retirar)) {
-    printf("Você está tentando retirar mais peças do que o máximo permitido "
-           "por jogada!\n");
+  if (pecaTirada > *(_informacao->max_retirar)) {
+    printf("Você está tentando retirar mais peças do que o máximo permitido por jogada!\n");
     return 0;
   }
 
-  if (info->pontuacao + pecaTirada >= *(info->max_peca)) {
+  if (_informacao->pontuacao + pecaTirada >= *(_informacao->max_peca)) {
     printf("Parabéns, você ganhou o jogo!\n");
     return 1;
   }
 
-  info->pontuacao += pecaTirada;
-
-  // Redimensionando o número máximo de peças no tabuleiro
-  *(info->max_peca) -= pecaTirada;
-  info->max_peca = (int *)realloc(info->max_peca, sizeof(int));
+  _informacao->pontuacao += pecaTirada;
+  *(_informacao->max_peca) -= pecaTirada;
 
   return -1;
 }
 
 int partida() {
-  struct JogoInfo info;
-  inicializarPeca(&info);
+  struct jogo_informacao _informacao;
+  inicializarPeca(&_informacao);
 
   printf("Digite o número máximo de peças no tabuleiro: ");
-  info.max_peca = (int *)malloc(sizeof(int));
-  scanf("%d", info.max_peca);
+  scanf("%d", _informacao.max_peca);
 
   printf("Digite o número máximo de peças a serem retiradas por jogada: ");
-  info.max_retirar = (int *)malloc(sizeof(int));
-  scanf("%d", info.max_retirar);
-
-  info.pontuacao = 0;
+  scanf("%d", _informacao.max_retirar);
 
   printf("\nConfigurações do jogo:\n");
-  exibirJogoInfo(&info);
+  exibirjogo_informacao(&_informacao);
 
-  int n = *(info.max_peca);
+  int n = *(_informacao.max_peca);
   printf("Deseja começar o jogo? (0 para sim, 1 para não): ");
   int vez_do_pc;
   scanf("%d", &vez_do_pc);
@@ -77,107 +75,158 @@ int partida() {
   printf("\nComeçando uma nova partida...\n");
   printf("Número inicial de peças no tabuleiro: %d\n", n);
 
-  while (n > 0) {
-      if (vez_do_pc) {
-          printf("Turno do computador...\n");
-          int remove_computador = 1;
-          printf("O computador removeu %d peça(s).\n", remove_computador);
-          n -= remove_computador;
-          vez_do_pc = 0;
-      } else {
-          printf("Seu turno...\n");
-          int remove_jogador;
-          printf("Digite quantas peças você quer remover (1 a %d): ",
-                 *(info.max_retirar));
-          scanf("%d", &remove_jogador);
-          int resultado = retirarPeca(&info, remove_jogador);
-          if (resultado == 1) {
-              printf("Fim do jogo! Você ganhou!\n");
-              free(info.max_peca);
-              free(info.max_retirar);
-              return 1; // Jogador ganhou
-          } else if (resultado == 0) {
-              printf("Jogada inválida! Tente novamente.\n");
-              continue;
-          }
-          printf("Você removeu %d peça(s).\n", remove_jogador);
-          n -= remove_jogador;
-          vez_do_pc = 1;
-      }
+  srand(time(NULL));
 
-      if (n > 0) {
-          printf("Agora restam %d peças no tabuleiro.\n", n);
+  while (n > 0) {
+    if (vez_do_pc) {
+      printf("Turno do computador...\n");
+      int remove_computador = (rand() % *(_informacao.max_retirar)) + 1;
+      if (remove_computador > n) {
+        remove_computador = n;
       }
+      printf("O computador removeu %d peça(s).\n", remove_computador);
+      n -= remove_computador;
+      vez_do_pc = 0;
+    } else {
+      printf("Seu turno...\n");
+      int remove_jogador;
+      printf("Digite quantas peças você quer remover (1 a %d): ",
+             *(_informacao.max_retirar));
+      scanf("%d", &remove_jogador);
+      int resultado = retirarPeca(&_informacao, remove_jogador);
+      if (resultado == 1) {
+        printf("Fim do jogo! Você ganhou!\n");
+        free(_informacao.max_peca);
+        free(_informacao.max_retirar);
+        return 1;
+      } else if (resultado == 0) {
+        printf("Jogada inválida! Tente novamente.\n");
+        continue;
+      }
+      printf("Você removeu %d peça(s).\n", remove_jogador);
+      n -= remove_jogador;
+      vez_do_pc = 1;
+    }
+
+    if (n > 0) {
+      printf("Agora restam %d peças no tabuleiro.\n", n);
+    }
   }
 
   printf("Fim do jogo! O computador ganhou!\n");
-  free(info.max_peca);
-  free(info.max_retirar);
-  return 0; // Computador ganhou
+  free(_informacao.max_peca);
+  free(_informacao.max_retirar);
+  return 0;
+}
+
+void salvarPontuacao(const char *filename, int *score) {
+  FILE *file = fopen(filename, "w");
+  if (file == NULL) {
+    printf("Erro ao abrir o arquivo para salvar.\n");
+    return;
+  }
+  fprintf(file, "%s\n%d\n", filename, *score);
+  fclose(file);
+  printf("Pontuação salva com sucesso.\nNome: %s\nScore: %d\n", filename,
+         *score);
+  
+}
+
+void carregarPontuacao( char *filename, int *score) {
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) {
+    printf("Erro ao abrir o arquivo %s para leitura.\n", filename);
+    return;
+  }
+
+  char nome[100]; // Variável para armazenar o nome do jogador
+  int temp_score; // Variável temporária para armazenar a pontuação
+
+  // Lê o nome do jogador
+  if (fgets(nome, sizeof(nome), file) == NULL) {
+    printf("Erro ao ler o nome do jogador.\n");
+    fclose(file);
+    return;
+  }
+
+  // Remove o caractere de nova linha do nome, se presente
+  nome[strcspn(nome, "\n")] = '\0';
+
+  // Lê a pontuação
+  if (fscanf(file, "%d", &temp_score) != 1) {
+    printf("Erro ao ler a pontuação do jogador.\n");
+    fclose(file);
+    return;
+  }
+
+  // Atribui os valores lidos aos parâmetros de saída
+  strcpy(filename, nome); // copia o nome do jogador para filename
+  *score = temp_score;
+
+  fclose(file);
+  printf("Pontuação carregada com sucesso.\n");
+  printf("Nome do jogador: %s\n", nome);
+  printf("Pontuação: %d\n", *score);
 }
 
 
 
-void contar(struct Campeonato *pontos_jogador, int partidas) {
-  int ganhou_humano = 0;
-  int ganhou_computador = 0;
-
+float campeonatos(int partidas, int *total_campeonatos_ganhos,
+                  int *total_campeonatos_feitos) {
+  float score_final = 0.0;
   for (int i = 0; i < partidas; i++) {
-    if (pontos_jogador[i].pontuacao_humano == 1) {
-      ganhou_humano++;
-    }
-    if (pontos_jogador[i].pontuacao_computador == 1) {
-      ganhou_computador++;
+    if (partida()) {
+      (*total_campeonatos_ganhos) += 1;
+      (*total_campeonatos_feitos) += 1;
+    } else {
+      (*total_campeonatos_feitos) += 1;
     }
   }
-
-  if (ganhou_humano > ganhou_computador) {
-    printf("Parabéns! Você ganhou o campeonato!\n");
-  } else if (ganhou_humano < ganhou_computador) {
-    printf("O computador ganhou o campeonato!\n");
-  } else {
-    printf("O campeonato terminou em empate!\n");
+  if (*total_campeonatos_feitos > 0) {
+    score_final = ((float)(*total_campeonatos_ganhos) * partidas) /
+                  *total_campeonatos_feitos;
+    printf("%f", score_final);
   }
+  return score_final;
 }
 
-void campeonato(int partidas) {
-  struct Campeonato *campeonato = malloc(partidas * sizeof(struct Campeonato));
-
-  for (int i = 0; i < partidas; i++) {
-      printf("\nPartida %d:\n", i + 1);
-      if (partida()) {
-          campeonato[i].pontuacao_humano += 1;
-      } else {
-          campeonato[i].pontuacao_computador += 1;
-      }
-  }
-
-  // Chamando a função contar para determinar o vencedor do campeonato
-  contar(campeonato, partidas);
-
-  free(campeonato);
-}
-int main() {
+int main(int argc, char *argv[]) {
   int escolha;
-  int partidas;
-  printf("Bem-vindo ao jogo do NIM!\n");
-  printf("Escolha uma opção:\n");
-  printf("1. Jogar partida normal\n");
-  printf("2. Jogar campeonato\n");
-  scanf("%d", &escolha);
+  int partidas = 0;
+  int score = 0;
+  int total_campeonatos_feitos = 0;
+  int total_campeonatos_ganhos = 0;
+  do {
+    printf("\nBem-vindo ao jogo do NIM!\n");
+    printf("Escolha uma opção:\n");
+    printf("1. Jogar partida normal\n");
+    printf("2. Jogar campeonato\n");
+    printf("3. Salvar pontuação\n");
+    printf("4. Carregar pontuação\n");
+    printf("5. Sair\n");
+    scanf("%d", &escolha);
 
-  switch (escolha) {
-  case 1:
-    partida();
-    break;
-  case 2:
-    printf("Digite o número de partidas do campeonato: ");
-    scanf("%d", &partidas);
-    campeonato(partidas);
-    break;
-  default:
-    printf("Opção inválida.\n");
-  }
+    if (escolha == 1) {
+      partida();
+    } else if (escolha == 2) {
+      printf("Digite o número de partidas do campeonato:");
+      scanf("%d", &partidas);
+      score = campeonatos(partidas, &total_campeonatos_ganhos,
+                          &total_campeonatos_feitos);
+    } else if (escolha == 3) {
+      char filename[256];
+      printf("Digite seu nome para salvar: ");
+      scanf("%s", filename);
+      salvarPontuacao(filename, &score);
+    } else if (escolha == 4) {
+      char filename[256];
+      printf("Digite o nome do arquivo para carregar: ");
+      scanf("%s", filename);
+      carregarPontuacao(filename, &score);
+    } else if (escolha != 5) {
+      printf("Opção inválida. Tente novamente.\n");
+    }
+  } while (escolha != 5);
 
   return 0;
 }
