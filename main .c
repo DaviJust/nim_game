@@ -139,28 +139,24 @@ void carregarPontuacao( char *filename, int *score) {
     return;
   }
 
-  char nome[100]; // Variável para armazenar o nome do jogador
-  int temp_score; // Variável temporária para armazenar a pontuação
+  char nome[100]; 
+  int temp_score; 
 
-  // Lê o nome do jogador
   if (fgets(nome, sizeof(nome), file) == NULL) {
     printf("Erro ao ler o nome do jogador.\n");
     fclose(file);
     return;
   }
 
-  // Remove o caractere de nova linha do nome, se presente
   nome[strcspn(nome, "\n")] = '\0';
 
-  // Lê a pontuação
   if (fscanf(file, "%d", &temp_score) != 1) {
     printf("Erro ao ler a pontuação do jogador.\n");
     fclose(file);
     return;
   }
 
-  // Atribui os valores lidos aos parâmetros de saída
-  strcpy(filename, nome); // copia o nome do jogador para filename
+  strcpy(filename, nome);
   *score = temp_score;
 
   fclose(file);
@@ -226,7 +222,8 @@ int main(int argc, char *argv[]) {
     } else if (escolha != 5) {
       printf("Opção inválida. Tente novamente.\n");
     }
-  } while (escolha != 5);
+  } while (escolha > 5 || escolha < 1);
 
   return 0;
 }
+
