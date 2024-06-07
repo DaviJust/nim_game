@@ -1,0 +1,402 @@
+/*
+ * <stdio.h> Inclui a biblioteca padrão de entrada e saída, que fornece funções para entrada e saída de dados.
+ * <stdlib.h> Inclui a biblioteca para alocação e liberação de memória dinâmica.
+ * <string.h> // Inclui a biblioteca para manipulação de strings.
+ * <time.h> // Inclui a biblioteca para lidar com funções relacionadas ao tempo e data.
+*/
+
+#include <stdio.h> // Inclui a biblioteca padrão de entrada e saída, que fornece funções para entrada e saída de dados.
+#include <stdlib.h> // Inclui a biblioteca para alocação e liberação de memória dinâmica.
+#include <string.h> // Inclui a biblioteca para manipulação de strings.
+#include <time.h> // Inclui a biblioteca para lidar com funções relacionadas ao tempo e data.
+
+
+
+
+/*
+ * Estrutura responsável por armazenar informações de um jogo.
+ *
+ * - pontuacao: Representa a pontuação atual do jogo.
+ * - max_peca: Ponteiro para a quantidade máxima de peças que podem ser retiradas em uma partida.
+ * - max_retirar: Ponteiro para a quantidade máxima de peças que um jogador pode escolher retirar em uma partida.
+ */
+
+struct jogo_informacao {
+    int pontuacao;      
+    int *max_peca;      
+    int *max_retirar;   
+};
+
+
+
+/* 
+ * Estrutura responsável por armazenar informações da partida.
+ *
+ * - pontuacao_humano: Representa a pontuação do jogador.
+ * - pontuacao_computador: Representa a pontuação do computador;
+*/
+
+struct campeonato {
+  int pontuacao_humano;
+  int pontuacao_computador;
+};
+
+
+
+/*
+ * Função denominada 'inicializarPeca' que recebe como parâmetro o ponteiro de um uma estrutura criada anteriormente denominada 'jogo_informacao'.
+ *
+ * Atribuição do valor 0 ao ponteiro pontuacao da estrutura apontado por 'jogo_informacao'.
+ * Aloca dinamicamente memória para o membro 'max_peca' da estrutura 'jogo_informacao', que definirá a quantidade máxima de peças a serem retiradas por partida.
+ * Aloca dinamicamente memória para o membro 'max_retirar' da estrutura jogo_informacao, que definirá a quantidade de peças a serem retiradas pelo jogador em cada partida.
+*/
+
+void inicializarPeca(struct jogo_informacao * jogo_informacao) {
+  jogo_informacao->pontuacao = 0;
+  jogo_informacao->max_peca = (int *)malloc(sizeof(int));
+  jogo_informacao->max_retirar = (int *)malloc(sizeof(int));
+}
+
+
+
+/*
+ * Função denominada 'exibirjogo_informacao' que receber como parâmetro a criação de um ponteiro '*_informacao' da estrutura 'jogo_informacao'.  
+ * O uso do 'const' antencedendo o parâmetro defini que a função não irá conseguir alterar a estrutura, apenas ler e/ou imprimir.
+ * 
+ * Uso da estrutura condicional IF/ELSE para validação e impressão do número máximo de peças a serem retirada no jogo e a reutilização do IF/ELSE para a vaçidação do número de peças a serem retiradas por um dos partipantes. 
+*/
+
+void exibirjogo_informacao(const struct jogo_informacao *_informacao) {
+  printf("Pontuação: %d\n", _informacao->pontuacao);
+  if (_informacao->max_peca != NULL)
+    printf("Máximo de peças no tabuleiro: %d\n", *(_informacao->max_peca));
+  else:
+    printf("Erro na inserção no número máximo de peças a serem retiradas por partidas");
+
+  if (_informacao->max_retirar != NULL) {
+    printf("Máximo de peças a serem retiradas por jogada: %d\n",
+           *(_informacao->max_retirar));
+  else:
+    printf("Erro na inserção no número de peças a serem retiradas pelo participante);
+}
+
+
+
+/**
+ * Função responsável por retira peças do jogo.
+ *
+ * Esta função recebe um ponteiro para uma estrutura 'jogo_informacao' e o número de peças a serem retiradas 'pecaTirada'. 
+ * A função verifica se o número de peças a serem retiradas é válido, não excede o máximo permitido pelo jogo, e atualiza a pontuação e o número máximo de peças restantes.
+ *
+ * Ponteiro '_informacao' para a estrutura `jogo_informacao`.
+ * Variável 'pecaTirada', número de peças a serem retiradas.
+ *
+ * Retorna 1 se o jogador ganhou o jogo (atingiu ou ultrapassou o número máximo de peças permitido),
+ * Retorna -1 se as peças foram retiradas com sucesso,
+ * Retorna 0 se houve um erro (número inválido de peças).
+ */
+
+int retirarPeca(struct jogo_informacao *_informacao, int pecaTirada) {
+  if (pecaTirada > *(_informacao->max_peca)) {
+    printf("Você está tentando retirar mais peças do que o número máximo permitido!\n");
+    return 0;
+  }
+
+
+  if (pecaTirada > *(_informacao->max_retirar)) {
+    printf("Você está tentando retirar mais peças do que o máximo permitido por jogada!\n");
+    return 0;
+  }
+
+  if (_informacao->pontuacao + pecaTirada >= *(_informacao->max_peca)) {
+    printf("Parabéns, você ganhou o jogo!\n");
+    return 1;
+  }
+
+  _informacao->pontuacao += pecaTirada;
+  *(_informacao->max_peca) -= pecaTirada;
+
+  return -1; 
+}
+
+
+
+/**
+ * Função resposável por carregar os dados da partida.
+ *
+ * Esta função solicita ao usuário o número máximo de peças no tabuleiro e o número máximo de peças a serem retiradas por jogada. 
+ * Iniciar uma nova partida e alternar entre turnos do jogador e do computador até que todas as peças sejam removidas.
+ *
+ * Retorna 1 se o jogador ganhar, 0 se o computador ganhar.
+ */
+
+int partida() {
+  struct jogo_informacao _informacao;
+  inicializarPeca(&_informacao);
+
+  printf("Digite o número máximo de peças no tabuleiro: ");
+  scanf("%d", _informacao.max_peca);
+
+  printf("Digite o número máximo de peças a serem retiradas por jogada: ");
+  scanf("%d", _informacao.max_retirar);
+
+  printf("\nConfigurações do jogo:\n");
+  exibirjogo_informacao(&_informacao);
+
+  int n = *(_informacao.max_peca);
+  printf("Deseja começar o jogo? (0 para sim, 1 para não): ");
+  int vez_do_pc;
+  scanf("%d", &vez_do_pc);
+
+  printf("\nComeçando uma nova partida...\n");
+  printf("Número inicial de peças no tabuleiro: %d\n", n);
+
+  srand(time(NULL));
+
+  while (n > 0) {
+    if (vez_do_pc) {
+      printf("Turno do computador...\n");
+      int remove_computador = (rand() % *(_informacao.max_retirar)) + 1;
+      if (remove_computador > n) {
+        remove_computador = n;
+      }
+      printf("O computador removeu %d peça(s).\n", remove_computador);
+      n -= remove_computador;
+      vez_do_pc = 0;
+    } else {
+      printf("Seu turno...\n");
+      int remove_jogador;
+      printf("Digite quantas peças você quer remover (1 a %d): ",
+             *(_informacao.max_retirar));
+      scanf("%d", &remove_jogador);
+      int resultado = retirarPeca(&_informacao, remove_jogador);
+      if (resultado == 1) {
+        printf("Fim do jogo! Você ganhou!\n");
+        free(_informacao.max_peca);
+        free(_informacao.max_retirar);
+        return 1;
+      } else if (resultado == 0) {
+        printf("Jogada inválida! Tente novamente.\n");
+        continue;
+      }
+      printf("Você removeu %d peça(s).\n", remove_jogador);
+      n -= remove_jogador;
+      vez_do_pc = 1;
+    }
+
+    if (n > 0) {
+      printf("Agora restam %d peças no tabuleiro.\n", n);
+    }
+  }
+
+  printf("Fim do jogo! O computador ganhou!\n");
+  free(_informacao.max_peca);
+  free(_informacao.max_retirar);
+  return 0;
+}
+
+
+
+/**
+ * Função que será responsável por salvar a pontuação em um arquivo.
+ *
+ * Esta função salva a pontuação especificada no parâmetro `score` em um arquivo
+ * com o nome especificado pelo parâmetro `filename`. O arquivo é criado ou
+ * sobrescrito se já existir. A pontuação é armazenada no formato de texto,
+ * seguido por uma quebra de linha.
+ *
+ * @param filename O nome do arquivo onde a pontuação será salva.
+ * @param score Um ponteiro para a pontuação a ser salva.
+ *
+ * @return Nenhum valor de retorno. A função exibe uma mensagem de sucesso ou
+ *         erro no console.
+ */
+
+void salvarPontuacao(const char *filename, int *score) {
+  FILE *file = fopen(filename, "w");
+  if (file == NULL) {
+    printf("Erro ao abrir o arquivo para salvar.\n");
+    return;
+  }
+  fprintf(file, "%s\n%d\n", filename, *score);
+  fclose(file);
+  printf("Pontuação salva com sucesso.\nNome: %s\nScore: %d\n", filename,
+         *score);
+  
+}
+
+
+
+/*
+ * Função responsável por carregar a pontuação em um arquivo
+ *
+ * Esta função lê o nome do jogador e a pontuação armazenados em um arquivo
+ * especificado pelo parâmetro `filename`. O nome do jogador é armazenado na
+ * variável `nome`, e a pontuação é armazenada na variável apontada por `score`.
+ *
+ * Parâmetro filename, arquivo de onde a pontuação será carregada.
+ * Ponteir score, para a variável que armazenará a pontuação carregada.
+ *
+ * A função atualiza o valor de `score` com a pontuação lida do arquivo.
+ */
+
+void carregarPontuacao( char *filename, int *score) {
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) {
+    printf("Erro ao abrir o arquivo %s para leitura.\n", filename);
+    return;
+  }
+
+  char nome[100]; 
+  int temp_score; 
+
+  if (fgets(nome, sizeof(nome), file) == NULL) {
+    printf("Erro ao ler o nome do jogador.\n");
+    fclose(file);
+    return;
+  }
+
+  nome[strcspn(nome, "\n")] = '\0';
+
+  if (fscanf(file, "%d", &temp_score) != 1) {
+    printf("Erro ao ler a pontuação do jogador.\n");
+    fclose(file);
+    return;
+  }
+
+  strcpy(filename, nome);
+  *score = temp_score;
+
+  fclose(file);
+  printf("Pontuação carregada com sucesso.\n");
+  printf("Nome do jogador: %s\n", nome);
+  printf("Pontuação: %d\n", *score);
+}
+
+
+
+/**
+ * Função responsável por calcular uma pontuação com base no número de campeonatos vencidos em uma série de partidas.
+ *
+ * Dado o número total de partidas jogadas e ponteiros para rastrear o total de campeonatos vencidos
+ * e o total de campeonatos participados, esta função calcula uma pontuação com base na proporção
+ * de campeonatos vencidos para campeonatos participados.
+ *
+ * Variável 'partidas', número total de partidas jogadas.
+ * Ponteiro 'total_campeonatos_ganhos', representa o total de campeonatos vencidos.
+ * Ponteiro 'total_campeonatos_feitos', representa o total de campeonatos participados.
+ * Retorna a pontuação calculada como um valor de ponto flutuante.
+ */
+
+float campeonatos(int partidas, int *total_campeonatos_ganhos,
+                  int *total_campeonatos_feitos) {
+  float score_final = 0.0;
+  for (int i = 0; i < partidas; i++) {
+    if (partida()) {
+      (*total_campeonatos_ganhos) += 1;
+      (*total_campeonatos_feitos) += 1;
+    } else {
+      (*total_campeonatos_feitos) += 1;
+    }
+  }
+  if (*total_campeonatos_feitos > 0) {
+    score_final = ((float)(*total_campeonatos_ganhos) * partidas) /
+                  *total_campeonatos_feitos;
+    printf("%f", score_final);
+  }
+  return score_final;
+}
+
+
+
+/**
+ * Função principal do jogo do NIM.
+ *
+ * @param argc Quantidade de argumentos da linha de comando.
+ * @param argv Vetor de strings com os argumentos da linha de comando.
+ * @return Código de retorno da aplicação (0 para sucesso).
+ *
+ * Esta função é o ponto de entrada do programa e controla o fluxo principal do jogo. Ela apresenta o menu ao jogador, recebe sua escolha, executa a ação correspondente e repete o processo até que o jogador decida sair.
+ *
+ * **Descrição detalhada do fluxo:**
+ *
+ * 1. Inicialização de variáveis:
+ *    * `escolha`: Armazena a opção escolhida pelo jogador no menu.
+ *    * `partidas`: Quantidade de partidas em um campeonato.
+ *    * `score`: Pontuação acumulada do jogador.
+ *    * `total_campeonatos_feitos`: Número total de campeonatos jogados pelo jogador.
+ *    * `total_campeonatos_ganhos`: Número total de campeonatos vencidos pelo jogador.
+ * 2. Loop principal do jogo:
+ *    * Apresentação do menu ao jogador com as opções disponíveis:
+ *        * Jogar partida normal (opção 1).
+ *        * Jogar campeonato (opção 2).
+ *        * Salvar pontuação (opção 3).
+ *        * Carregar pontuação (opção 4).
+ *        * Sair do jogo (opção 5).
+ *    * Leitura da escolha do jogador através da função `scanf()`.
+ *    * Tratamento da escolha do jogador utilizando a instrução `switch`:
+ *        * **Caso 1 (Jogar partida normal):**
+ *            * Chama a função `partida()` para iniciar uma partida normal contra o computador.
+ *        * **Caso 2 (Jogar campeonato):**
+ *            * Solicita ao jogador o número de partidas que deseja jogar no campeonato.
+ *            * Chama a função `campeonatos()` para iniciar o campeonato, passando como parâmetros:
+ *                * `partidas`: Quantidade de partidas do campeonato.
+ *                * `total_campeonatos_ganhos`: Ponteiro para variável que armazena o total de campeonatos ganhos.
+ *                * `total_campeonatos_feitos`: Ponteiro para variável que armazena o total de campeonatos jogados.
+ *            * A função `campeonatos()` retorna a pontuação final do jogador no campeonato, que é armazenada na variável `score`.
+ *        * **Caso 3 (Salvar pontuação):**
+ *            * Solicita ao jogador o nome do arquivo para salvar a pontuação.
+ *            * Chama a função `salvarPontuacao()` para salvar a pontuação do jogador no arquivo especificado.
+ *        * **Caso 4 (Carregar pontuação):**
+ *            * Solicita ao jogador o nome do arquivo para carregar a pontuação.
+ *            * Chama a função `carregarPontuacao()` para carregar a pontuação do jogador do arquivo especificado.
+ *        * **Caso 5 (Sair):**
+ *            * Encerra o loop principal do jogo.
+ *        * **Caso default (Opção inválida):**
+ *            * Exibe uma mensagem de erro informando que a opção escolhida é inválida e solicita ao jogador que tente novamente.
+ * 3. Condição de saída do loop:
+ *    * O loop principal do jogo é executado enquanto a escolha do jogador for um valor válido (entre 1 e 5).
+ * 4. Retorno da função `main()`:
+ *    * A função `main()` retorna o código 0 para indicar que o programa foi executado com sucesso.
+ */
+int main(int argc, char *argv[]) {
+  int escolha;
+  int partidas = 0;
+  int score = 0;
+  int total_campeonatos_feitos = 0;
+  int total_campeonatos_ganhos = 0;
+  do {
+    printf("\nBem-vindo ao jogo do NIM!\n");
+    printf("Escolha uma opção:\n");
+    printf("1. Jogar partida normal\n");
+    printf("2. Jogar campeonato\n");
+    printf("3. Salvar pontuação\n");
+    printf("4. Carregar pontuação\n");
+    printf("5. Sair\n");
+    scanf("%d", &escolha);
+
+    if (escolha == 1) {
+      partida();
+    } else if (escolha == 2) {
+      printf("Digite o número de partidas do campeonato:");
+      scanf("%d", &partidas);
+      score = campeonatos(partidas, &total_campeonatos_ganhos,
+                          &total_campeonatos_feitos);
+    } else if (escolha == 3) {
+      char filename[256];
+      printf("Digite seu nome para salvar: ");
+      scanf("%s", filename);
+      salvarPontuacao(filename, &score);
+    } else if (escolha == 4) {
+      char filename[256];
+      printf("Digite o nome do arquivo para carregar: ");
+      scanf("%s", filename);
+      carregarPontuacao(filename, &score);
+    } else if (escolha != 5) {
+      printf("Opção inválida. Tente novamente.\n");
+    }
+  } while (escolha > 5 || escolha < 1);
+
+  return 0;
+}
+
