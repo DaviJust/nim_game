@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
     } else if (escolha != 5) {
       printf("Opção inválida. Tente novamente.\n");
     }
-  } while (escolha > 5 || escolha < 1);
+  } while (escolha < 5 || escolha < 1);
 
   return 0;
 }
